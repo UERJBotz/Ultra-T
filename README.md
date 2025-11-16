@@ -16,7 +16,7 @@ Ultra T tem 4 sensores. 2 frontais e 2 laterais. Por se tratar dessa categoria, 
   > 
   > Sensor Frontal Esquerdo pino 33
   > 
-  > Sensor Frontal Direito pino 32
+  > Sensor Frontal Direito pino 14
   > 
   > Sensor Lateral Direito pino 34
   
