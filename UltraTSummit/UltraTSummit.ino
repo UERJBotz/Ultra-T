@@ -16,7 +16,8 @@
 #include <esp_now.h>
 #include <WiFi.h>
 
-// Começa no modo em que está "true"
+// começa no modo em que está "true"
+// trocar se não funcionar
 bool modoAutonomo = true;  
 bool RC = false;
 
