@@ -16,8 +16,9 @@
 #include <esp_now.h>
 #include <WiFi.h>
 
-bool modoAutonomo = false;  // Começa no modo RC (ESP-NOW)
-bool RC = true;
+// Começa no modo em que está "true"
+bool modoAutonomo = true;  
+bool RC = false;
 
 #define boot 0 
 
@@ -234,13 +235,13 @@ void strategySelection() {
   if (cmd <= 8) {
     const int num_leds = cmd % 8;
     for(uint8_t i = 0; i < num_leds; i++) {
-      switch ((cmd-3) % 6) { // Acende o LED de 0 ao número comando numa cor +- diferente cada número
-        case 0: pixels.setPixelColor(i, pixels.Color(150, 0,   0  )); break;
-        case 1: pixels.setPixelColor(i, pixels.Color(150, 150, 150)); break;
-        case 2: pixels.setPixelColor(i, pixels.Color(0,   0,   150)); break;
-        case 3: pixels.setPixelColor(i, pixels.Color(255, 150, 0  )); break;
-        case 4: pixels.setPixelColor(i, pixels.Color(0,   150, 255)); break;
-        case 5: pixels.setPixelColor(i, pixels.Color(0,   0,   255)); break;
+      switch ((cmd-3) % 6) { 
+        case 0: pixels.setPixelColor(i, pixels.Color(255, 50,  50  )); break; // Vermelho claro
+        case 1: pixels.setPixelColor(i, pixels.Color(0,   255, 100 )); break; // Verde com toque de azul
+        case 2: pixels.setPixelColor(i, pixels.Color(255, 0,   180 )); break; // Magenta
+        case 3: pixels.setPixelColor(i, pixels.Color(255, 140, 0   )); break; // Laranja
+        case 4: pixels.setPixelColor(i, pixels.Color(100, 200, 255 )); break; // Azul claro
+        case 5: pixels.setPixelColor(i, pixels.Color(180, 255, 0   )); break; // Verde-amarelado
       } pixels.show();
     }
     delay(80);
