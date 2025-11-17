@@ -53,7 +53,7 @@ A placa foi projetada e desenvolvida no site EasyEDA para o controlador ESP32 e 
 <div align="center">
   <img src="https://github.com/user-attachments/assets/bcabcb4d-5d36-4fa3-80d5-55d7ac197249" width="400">
   <br>
-  <sub><em><b>Figura 5:</b> Placa com inagem.</em></sub>
+  <sub><em><b>Figura 5:</b> Placa com pinagem.</em></sub>
 </div>
 
 <div align="center">
