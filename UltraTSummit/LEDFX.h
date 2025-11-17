@@ -69,35 +69,42 @@ void setDefaultColor(uint8_t r, uint8_t g, uint8_t b) {
   
 
 void ledDetection() {
-  setDefaultColor(0, 0, 150); // Define a cor padrão azul para todos os LEDs (Red, Green, Blue)
+  setDefaultColor(150, 0, 0); // Define cor padrão
   leituraSensores();
    
   if (leitura[0]) {
-  Serial.println("ESQUERDA LATERAL DETECTADO");
-  pixels.setPixelColor(LED7, pixels.Color(0, 150, 0)); // Acende o LED da casa 8
-  
+    Serial.println("ESQUERDA LATERAL DETECTADO");
+    pixels.setPixelColor(LED7, pixels.Color(0, 150, 0));              // LED principal
+    pixels.setPixelColor((LED7 - 1) % NUMPIXELS, pixels.Color(0, 150, 0)); // LED ao lado
   }
-  if (leitura[1]) {
-  Serial.println("ESQUERDA FRONTAL DETECTADO");
-  pixels.setPixelColor(LED5, pixels.Color(0, 150, 0)); // Acende o LED da casa 4
 
+  if (leitura[1]) {
+    Serial.println("ESQUERDA FRONTAL DETECTADO");
+    pixels.setPixelColor(LED5, pixels.Color(0, 0, 150));
+    pixels.setPixelColor((LED5 + 1) % NUMPIXELS, pixels.Color(0, 0, 150));
   }
+
   if (leitura[2]) {
-  Serial.println("DIREITA FRONTAL DETECTADO");
-  pixels.setPixelColor(LED4, pixels.Color(0, 150, 0)); // Acende o LED da casa 3
+    Serial.println("DIREITA FRONTAL DETECTADO");
+    pixels.setPixelColor(LED4, pixels.Color(0, 0, 150));
+    pixels.setPixelColor((LED4 - 1) % NUMPIXELS, pixels.Color(0, 0, 150));
   }
+
   if (leitura[3]) {
-  Serial.println("DIREITA LATERAL DETECTADO");
-  pixels.setPixelColor(LED1, pixels.Color(0, 150, 0)); // Acende o LED da casa 0
+    Serial.println("DIREITA LATERAL DETECTADO");
+    pixels.setPixelColor(LED1, pixels.Color(0, 150, 0));
+    pixels.setPixelColor((LED1 + 1) % NUMPIXELS, pixels.Color(0, 150, 0));
   }
   else {
-  Serial.println("PROCURANDO OBJETO");
+    Serial.println("PROCURANDO OBJETO");
   }
-  
-pixels.show();
-delay(10);
+
+  pixels.show();
+  delay(10);
 }
 
 
 
+
 #endif
+
