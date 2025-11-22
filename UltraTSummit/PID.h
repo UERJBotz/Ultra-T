@@ -1,13 +1,8 @@
 #ifndef pid_H
 #define pid_H
 
-
-#include "Sensores.h"
-#include "DRV8833.h"
-
 // sujeito a mudanças se os motores forem retirados
 // caso isso aconteça, rodar um programa simples para testar o sentido dos motores (ir pra frente depois pra trás)
-DRV8833 motor(18, 19, 4, 23); // caçadora 19, 18, 23, 4 // ultra t 19, 18, 23, 4
 
 
 // Leitura dos sensores
@@ -40,7 +35,11 @@ void calculoErroSensor() {
   leituraSensores();
 
   // Peso para cada sensor: esquerda negativo, direita positivo
-  float peso[] = {-3, -2, 2, 3}; 
+  #ifndef PID_2222
+    float peso[] = {-3, -2, 2, 3};
+  #else
+    float peso[] = {-2, -2, 2, 2};
+  #endif
   float soma_pesos = 0;
   int ativos = 0;
 
@@ -88,9 +87,9 @@ void iSeeYou() { // não é uma estratégia e sim o ataque principal, mas pode s
 
   
   if (PID == 0) {
-    motor.move(1023, 1023);
+    mover(1023, 1023);
   } else {
-    motor.move(velocidade_esq, velocidade_dir);
+    mover(velocidade_esq, velocidade_dir);
   }
 }
 

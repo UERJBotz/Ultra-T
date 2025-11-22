@@ -3,7 +3,7 @@
 
 // testar ainda
 
-#include "Sensores.h"
+#include "sensores.h"
 #include "PID.h"
 #include "Whiplash.h"
 
@@ -23,12 +23,12 @@ void Sharingan(){
   // executa sempre o mesmo caso sorteado
   switch (sorteio){
     case 1:
-      motor.move(-900, 900);
+      mover(-900, 900);
       delay(tempoGiro);
       whiplash();
       break;
     case 2:
-      motor.move(900, -900);
+      mover(900, -900);
       delay(tempoGiro);
       whiplash();
       break;

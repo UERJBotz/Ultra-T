@@ -1,6 +1,6 @@
 #ifndef ledFX_H
 #define ledFX_H
-#include "pid.h"
+#include "PID.h"
 #include <Adafruit_NeoPixel.h>
 
 #define LED4 3
@@ -16,7 +16,7 @@ void ledBlink(int r, int g, int b, int time) {    // pisca todas os leds em um i
   pixels.clear();
   for(int i=0; i<NUMPIXELS; i++) { 
     pixels.setPixelColor(i, pixels.Color(r, g, b));
-    pixels.show();   
+    pixels.show();
   }
   pixels.clear();
   delay(time);

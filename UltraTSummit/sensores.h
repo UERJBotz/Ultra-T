@@ -14,7 +14,7 @@
 // #define JFDir 26
 // #define JDir 32
 
-bool sensores[] = {JEsq, JFEsq, JFDir, JDir};
+uint8_t sensores[] = {JEsq, JFEsq, JFDir, JDir};
 
 void setupSensores() {
   pinMode(JEsq, INPUT);
@@ -22,7 +22,5 @@ void setupSensores() {
   pinMode(JFDir, INPUT);
   pinMode(JDir, INPUT);
 }
-
-
 
 #endif

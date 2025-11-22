@@ -9,13 +9,13 @@ void whiplash() {
   leituraSensores();
   if (leitura[1] || leitura[2]) {
     achou = true;
-    motor.stop();
+    parar();
   }
   
   if (achou) {
     iSeeYou();
   } else {
-    motor.move(1023, 1023);
+    mover(1023, 1023);
   }
 }
 

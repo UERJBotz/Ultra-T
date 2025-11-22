@@ -6,22 +6,38 @@
 
   https://github.com/eltonsrgit/UltraTSummit/
 */
-#include "SumoIR.h"
-#include "DRV8833.h"
+
+
+//#define PID_2222
+
+#include <Arduino.h>
+#include <esp_now.h>
+#include <WiFi.h>
+#include <SumoIR.h>
+
+#include "motores.h"
+#include "sensores.h"
 #include "PID.h"
 #include "Whiplash.h"
 #include "Empate.h"
 #include "Sharingan.h"
 #include "LEDFX.h"
-#include <esp_now.h>
-#include <WiFi.h>
+
+
+typedef int esp_now_len_t; //!
+
+#define boot 0
+#define CONTROLE pistola_elton
+
+#define memeql(a,b,sz) (memcmp(a,b,sz) == 0)
+
+const uint8_t pistola_elton[6] = {0xF4, 0x65, 0x0B, 0x48, 0x03, 0x8C}; //F4:65:0B:48:03:8C
+
 
 // começa no modo em que está "true"
 // trocar se não funcionar
-bool modoAutonomo = true;  
+bool modoAutonomo = true;
 bool RC = false;
-
-#define boot 0 
 
 int strategy = 0;
 
@@ -31,7 +47,7 @@ unsigned long tempoPressionado = 0;  // armazena o tempo que o botão foi pressi
 bool botaoPressionado = false;       // indica se o botão foi pressionado
 
 // protótipo da callback (declarado antes do setup para que o registro funcione)
-void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len);
+void on_recv(const esp_now_recv_info_t* info, const uint8_t* data, esp_now_len_t len);
 
 void setup() {
   Serial.begin(115200);
@@ -42,28 +58,24 @@ void setup() {
     return;
   }
 
-  esp_now_register_recv_cb(OnDataRecv);
+  esp_now_register_recv_cb(on_recv);
 
   IR.begin(15); // sensor conectado no pino 15 (não mudar)
   
-  motor.begin();
-  motor.bip(5, 250, 2500); // motor bipa (x vezes, intervalo (ms), frequencia em Hz)
+  //! motor.bip(5, 250, 2500); // motor bipa (x vezes, intervalo (ms), frequencia em Hz)
 
   setupSensores();
+  setupMotores();
 
   pinMode(boot, INPUT_PULLUP);
 
-  ////////////////////////////////// para o LED ////////////////////////////////////
-  #if defined (__AVR_ATtiny85__)
-    if (F_CPU == 16000000) clock_prescale_set(clock_div_1);
-  #endif
-  
+  /////// para o LED ///////
   pixels.begin();
   pixels.setBrightness(50);
   pixels.clear();
   ledLight(0, 0, 0);
-  //////////////////////////////////////////////////////////////////////////////////
-  
+  //////////////////////////
+
   Serial.println("Sistema iniciado no modo RC (ESP-NOW)");
   pixels.clear();
   ledLight(0, 150, 0); // LED verde indicando modo RC
@@ -88,13 +100,14 @@ void loop() {
   }
 
   // Verifica se o botão foi pressionado por mais de 1000ms (1 segundo)
-  if (botaoPressionado && (millis() - tempoPressionado >= 1000)) {
+  if (botaoPressionado &&
+      (millis() - tempoPressionado >= 1000)) {
     modoAutonomo = !modoAutonomo;  // Alterna o modo
     RC = !modoAutonomo;
-    
+
     Serial.print("Modo alternado para: ");
     Serial.println(modoAutonomo ? "Autônomo." : "RC.");
-    
+
     // Efeito visual indicando mudança de modo
     pixels.clear();
     if (modoAutonomo) {
@@ -104,27 +117,31 @@ void loop() {
     }
 
     // Para os motores ao alternar modos
-    motor.stop();
-    
+    parar();
+    parar();
+    parar();
+    parar();
+
     // Reseta a variável do botão pressionado
     botaoPressionado = false;
   }
 
   // Libera o botão se soltou antes de 1 segundo
-  if (botaoPressionado && digitalRead(boot) == HIGH && (millis() - tempoPressionado < 1000)) {
+  if (botaoPressionado && digitalRead(boot) == HIGH &&
+      (millis() - tempoPressionado < 1000)) {
     botaoPressionado = false;
   }
 
   if (modoAutonomo) {
     // Código autônomo
     RC = false;
-  
+
     IR.update();
  
     if (IR.prepare()) { // número 1 no controle
       pixels.clear();
       ledLight(255, 255, 255);
-      motor.stop();
+      parar();
       Serial.println("-> sumo prepare"); // não retirar essa linha (aparentemente dá erro para iniciar com o IR
     }
     
@@ -160,13 +177,16 @@ void loop() {
       }
       Serial.println("-> sumo on"); // não retirar essa linha (aparentemente dá erro para iniciar com o IR
     }
-    
+
     else if (IR.stop()) { // número 3 no controle
       pixels.clear();
-      motor.stop();
+      ledLight(255, 255, 0);
+      parar();
+      parar();
+      parar();
       Serial.println("-> sumo stop"); // não retirar essa linha (aparentemente dá erro para iniciar com o IR
     }
-    
+
     else { // robô inicia caindo aqui
       pixels.clear();
       strategySelection();     // seletor de estratégias
@@ -176,11 +196,12 @@ void loop() {
   } 
 }
 
-void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
-
+void on_recv(const esp_now_recv_info_t* info, const uint8_t* data, esp_now_len_t len) {
   if (modoAutonomo) return;
 
-  memcpy(&pack_rc, incomingData, sizeof(pack_rc));
+  if (!memeql(info->src_addr, CONTROLE, sizeof(CONTROLE))) return;
+
+  memcpy(&pack_rc, data, sizeof(pack_rc));
 
   pixels.clear();
   ledLight(0, 150, 0);
@@ -217,11 +238,12 @@ void OnDataRecv(const uint8_t * mac, const uint8_t *incomingData, int len) {
 
   const int deadzone = 200; // acho que de 200 à 500 é bom
 
-  if (abs(motorEsq) < deadzone && abs(motorDir) < deadzone) {
-    motor.stop();  
+  if (abs(motorEsq) < deadzone &&
+      abs(motorDir) < deadzone) {
+    parar();  
     Serial.println("MOTORES PARADOS");
   } else {
-    motor.move(motorEsq, motorDir);
+    mover(motorEsq, motorDir);
   }
 }
 
