@@ -1,9 +1,10 @@
 #include <esp_now.h>
 #include <WiFi.h>
 
-// REPLACE WITH YOUR ESP RECEIVER'S MAC ADDRESS
-//uint8_t broadcastAddress1[] = {0xA0, 0xB7, 0x65, 0x4A, 0x4D, 0x60}; //A0:B7:65:4A:4D:60
-uint8_t broadcastAddress1[] = {0xF4, 0x65, 0x0B, 0x48, 0x03, 0x8C}; //F4:65:0B:48:03:8C
+uint8_t broadcastAddress1[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+//A0:B7:65:4A:4D:60
+//F4:65:0B:48:03:8C
+//60:55:f9:9f:a5:7c
 
 typedef struct tx {
   int gatilho;
@@ -15,12 +16,13 @@ tx pack_tx;
 esp_now_peer_info_t peerInfo;
 
 // callback when data is sent
-void OnDataSent(const uint8_t *mac_addr, esp_now_send_status_t status) {
+void OnDataSent(const wifi_tx_info_t* info, esp_now_send_status_t status) {
   char macStr[18];
   Serial.print("Packet to: ");
   // Copies the sender mac address to a string
   snprintf(macStr, sizeof(macStr), "%02x:%02x:%02x:%02x:%02x:%02x",
-           mac_addr[0], mac_addr[1], mac_addr[2], mac_addr[3], mac_addr[4], mac_addr[5]);
+           info->src_addr[0], info->src_addr[1], info->src_addr[2],
+           info->src_addr[3], info->src_addr[4], info->src_addr[5]);
   Serial.print(macStr);
   Serial.print(" send status:\t");
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
@@ -64,10 +66,9 @@ void setup() {
  
 void loop() {
   pack_tx.gatilho = analogRead(3);
-  pack_tx.roda = analogRead(1);
+  pack_tx.roda    = analogRead(1);
   
- 
-  esp_err_t result = esp_now_send(0, (uint8_t *) &pack_tx, sizeof(tx));
+  esp_err_t result = esp_now_send(broadcastAddress1, (uint8_t *) &pack_tx, sizeof(tx));
    
   if (result == ESP_OK) {
     Serial.println("Sent with success");
